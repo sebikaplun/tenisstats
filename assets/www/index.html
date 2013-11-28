@@ -15,6 +15,7 @@
     <link href="css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    
 
     <!-- Just for debugging purposes. Don't actually copy this line! -->
     <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -28,24 +29,32 @@
 
 
     <script type="text/javascript">
-      
-    // Wait for Cordova to load
+    // Cordova is ready
     //
-    document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
+        console.log("entro aca");
+                alert("entro!");
+
+        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
+        db.transaction(populateDB, errorCB, successCB);
+        db.transaction(queryDB, errorCB);
+          
+
+    }
 
     // Populate the database 
     //
     function populateDB(tx) {
         //tx.executeSql('DROP TABLE IF EXISTS DEMO');
-        tx.executeSql('CREATE TABLE IF NOT EXISTS DEMO (id, data)');
-        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (1, "First row")');
-        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (2, "Second row")');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS TORNEOS (id unique, nombre)');
+        tx.executeSql('INSERT INTO TORNEOS (id, nombre) VALUES (1, "Wimbledon")');
+        tx.executeSql('INSERT INTO TORNEOS (id, nombre) VALUES (2, "No se mas nombres")');
     }
 
     // Query the database
     //
     function queryDB(tx) {
-        tx.executeSql('SELECT * FROM DEMO', [], querySuccess, errorCB);
+        tx.executeSql('SELECT * FROM TORNEOS', [], querySuccess, errorCB);
     }
 
     // Query the success callback
@@ -53,9 +62,13 @@
     function querySuccess(tx, results) {
         var len = results.rows.length;
         console.log("DEMO table: " + len + " rows found.");
+        var select = document.getElementById("select-torneos");
+
         for (var i=0; i<len; i++){
-            console.log("Row = " + i + " ID = " + results.rows.item(i).id + " Data =  " + results.rows.item(i).data);
+                console.log("agrego " +  results.rows.item(i).nombre)
+                select.options[select.options.length] = new Option(results.rows.item(i).nombre, i);
         }
+        select.options[select.options.length] = new Option("Agregar nuevo torneo", i);
     }
 
     // Transaction error callback
@@ -73,39 +86,19 @@
 
 
 function queryDB(tx) {
-    tx.executeSql('SELECT * FROM DEMO', [], querySuccess, errorCB);
-}
-
-function querySuccess(tx, results) {
-    alert("Returned rows = " + results.rows.length);
-    // this will be true since it was a select statement and so rowsAffected was 0
-    if (!results.rowsAffected) {
-        alert('No rows affected!');
-        return false;
-    }
-    // for an insert statement, this property will return the ID of the last inserted row
-    alert("Last inserted row ID = " + results.insertId);
+    tx.executeSql('SELECT * FROM TORNEOS', [], querySuccess, errorCB);
 }
 
 function errorCB(err) {
     alert("Error processing SQL: "+err.code);
 }
 
-    // Cordova is ready
+ 
+
+    // Wait for Cordova to load
     //
-    function onDeviceReady() {
-        console.log("entro aca");
-                alert("entro!");
-
-        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
-        db.transaction(populateDB, errorCB, successCB);
-        db.transaction(queryDB, errorCB);
-
-          
-
-    }
-        alert("success fuera!");
-
+    document.addEventListener("deviceready", onDeviceReady, false);
+    
     </script>
   </head>
 	<body>
@@ -124,12 +117,8 @@ function errorCB(err) {
     				<input type="text" class="form-control">
 
     				<p class="help-block">Torneo</p>
-    				<select id="selectError" style="width:100%">  
-		                <option>1</option>  
-		                <option>2</option>  
-		                <option>3</option>  
-		                <option>4</option>  
-		                <option>5</option>  
+    				<select id="select-torneos" style="width:100%">  
+		                <option>Seleccione torneo</option>  
               		</select> 
 
               		<p class="help-block">Fecha	</p>
